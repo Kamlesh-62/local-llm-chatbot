@@ -1,0 +1,14 @@
+code,type,province_en,province_fr,capital_en,capital_fr,region_en,region_fr
+NL,province,Newfoundland and Labrador,Terre-Neuve-et-Labrador,St. John's,St. John's,Atlantic Canada,Canada atlantique
+PE,province,Prince Edward Island,Île-du-Prince-Édouard,Charlottetown,Charlottetown,Atlantic Canada,Canada atlantique
+NS,province,Nova Scotia,Nouvelle-Écosse,Halifax,Halifax,Atlantic Canada,Canada atlantique
+NB,province,New Brunswick,Nouveau-Brunswick,Fredericton,Fredericton,Atlantic Canada,Canada atlantique
+QC,province,Quebec,Québec,Quebec City,Québec,Central Canada,Centre du Canada
+ON,province,Ontario,Ontario,Toronto,Toronto,Central Canada,Centre du Canada
+MB,province,Manitoba,Manitoba,Winnipeg,Winnipeg,Prairie Provinces,Provinces des Prairies
+SK,province,Saskatchewan,Saskatchewan,Regina,Regina,Prairie Provinces,Provinces des Prairies
+AB,province,Alberta,Alberta,Edmonton,Edmonton,Prairie Provinces,Provinces des Prairies
+BC,province,British Columbia,Colombie-Britannique,Victoria,Victoria,West Coast,Côte Ouest
+YT,territory,Yukon,Yukon,Whitehorse,Whitehorse,Northern Territories,Territoires du Nord
+NT,territory,Northwest Territories,Territoires du Nord-Ouest,Yellowknife,Yellowknife,Northern Territories,Territoires du Nord
+NU,territory,Nunavut,Nunavut,Iqaluit,Iqaluit,Northern Territories,Territoires du Nord

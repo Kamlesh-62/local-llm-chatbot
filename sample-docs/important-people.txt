@@ -1,0 +1,269 @@
+IMPORTANT PEOPLE
+Source: apps/web/app/(site)/quiz/study-tools/people/people-data.ts
+
+Explorers & Founders
+====================
+- John Cabot
+  Role (EN): Explorer
+  Role (FR): Explorateur
+  Description (EN): Mapped the Atlantic coast in 1497 and claimed Newfoundland for England.
+  Description (FR): A cartographié la côte atlantique en 1497 et revendiqué Terre-Neuve pour l'Angleterre.
+
+- Jacques Cartier
+  Role (EN): Explorer
+  Role (FR): Explorateur
+  Description (EN): Made three voyages (1534–1542) for King Francis I, exploring the St. Lawrence River.
+  Description (FR): A effectué trois voyages (1534–1542) pour le roi François Ier, explorant le fleuve Saint-Laurent.
+
+- Samuel de Champlain
+  Role (EN): Founder of New France
+  Role (FR): Fondateur de la Nouvelle-France
+  Description (EN): Co-founded first European settlement north of Florida (1604); built Quebec City (1608).
+  Description (FR): A cofondé le premier établissement européen au nord de la Floride (1604) ; a fondé Québec (1608).
+
+- Pierre de Monts
+  Role (EN): Explorer & Colonizer
+  Role (FR): Explorateur et colonisateur
+  Description (EN): Co-founded Port-Royal in Acadia (Nova Scotia) with Champlain in 1604.
+  Description (FR): A cofondé Port-Royal en Acadie (Nouvelle-Écosse) avec Champlain en 1604.
+
+- Count Frontenac
+  Role (EN): Governor of New France
+  Role (FR): Gouverneur de la Nouvelle-France
+  Description (EN): Expanded the fur trade and French influence from Hudson Bay to the Gulf of Mexico.
+  Description (FR): A étendu le commerce des fourrures et l'influence française de la baie d'Hudson au golfe du Mexique.
+
+Political Leaders
+=================
+- Sir John A. Macdonald
+  Role (EN): First Prime Minister
+  Role (FR): Premier premier ministre
+  Description (EN): Father of Confederation. Born in Scotland (1815), first Prime Minister from 1867. January 11 is Sir John A. Macdonald Day. In Discover Canada, he appears on the $10 bill.
+  Description (FR): Père de la Confédération. Né en Écosse (1815), premier premier ministre à partir de 1867. Le 11 janvier est la Journée Sir John A. Macdonald. Dans Découvrir le Canada, il figure sur le billet de 10 $.
+
+- Sir George-Étienne Cartier
+  Role (EN): Father of Confederation
+  Role (FR): Père de la Confédération
+  Description (EN): Montreal lawyer who negotiated Quebec's entry into Confederation.
+  Description (FR): Avocat montréalais qui a négocié l'entrée du Québec dans la Confédération.
+
+- Sir Wilfrid Laurier
+  Role (EN): First French-Canadian PM
+  Role (FR): Premier PM francophone
+  Description (EN): Prime Minister (1896–1911). Promoted Western settlement and national unity.
+  Description (FR): Premier ministre (1896–1911). A promu la colonisation de l'Ouest et l'unité nationale.
+
+- Sir Louis-Hippolyte La Fontaine
+  Role (EN): First Head of Responsible Government
+  Role (FR): Premier chef du gouvernement responsable
+  Description (EN): Champion of French-language rights in a united Canada. Led responsible government (1848–49).
+  Description (FR): Défenseur des droits linguistiques francophones dans un Canada uni. A dirigé le gouvernement responsable (1848–49).
+
+- Sir Robert Borden
+  Role (EN): Prime Minister during WWI
+  Role (FR): Premier ministre durant la Première Guerre mondiale
+  Description (EN): Led Canada through World War I. Extended voting rights to women (1917–18).
+  Description (FR): A dirigé le Canada pendant la Première Guerre mondiale. A étendu le droit de vote aux femmes (1917–18).
+
+- Lord Durham
+  Role (EN): Governor General
+  Role (FR): Gouverneur général
+  Description (EN): Recommended union of Upper and Lower Canada and the introduction of responsible government.
+  Description (FR): A recommandé l'union du Haut et du Bas-Canada et l'instauration du gouvernement responsable.
+
+- Louis Riel
+  Role (EN): Métis Leader
+  Role (FR): Chef métis
+  Description (EN): Led Métis uprisings at Red River (1870) and Saskatchewan (1885). Manitoba was created as a result.
+  Description (FR): A mené les soulèvements métis à la rivière Rouge (1870) et en Saskatchewan (1885). Le Manitoba en a résulté.
+
+Military Heroes
+===============
+- Sir Isaac Brock
+  Role (EN): Military Leader, War of 1812
+  Role (FR): Chef militaire, guerre de 1812
+  Description (EN): Captured Detroit in July 1812 but died heroically at the Battle of Queenston Heights.
+  Description (FR): A pris Detroit en juillet 1812 mais est mort héroïquement à la bataille de Queenston Heights.
+
+- Laura Secord
+  Role (EN): War Heroine
+  Role (FR): Héroïne de guerre
+  Description (EN): Walked 19 miles to warn Lieutenant FitzGibbon of an American attack before the Battle of Beaver Dams (1813).
+  Description (FR): A marché 19 milles pour avertir le lieutenant FitzGibbon d'une attaque américaine avant la bataille de Beaver Dams (1813).
+
+- Charles de Salaberry
+  Role (EN): Military Leader
+  Role (FR): Chef militaire
+  Description (EN): With 460 mostly French-Canadian soldiers, repelled ~4,000 Americans at Chateauguay (1813).
+  Description (FR): Avec 460 soldats, principalement canadiens-français, a repoussé environ 4 000 Américains à Châteauguay (1813).
+
+- Alexander Roberts Dunn
+  Role (EN): First Canadian V.C. Recipient
+  Role (FR): Premier Canadien à recevoir la Croix de Victoria
+  Description (EN): Born in Toronto. British Army officer who received the Victoria Cross for bravery at Balaclava (1854).
+  Description (FR): Né à Toronto. Officier de l'armée britannique décoré de la Croix de Victoria pour sa bravoure à Balaclava (1854).
+
+- Captain Billy Bishop
+  Role (EN): WWI Flying Ace
+  Role (FR): As de l'aviation de la Première Guerre mondiale
+  Description (EN): Born in Owen Sound, Ontario. Victoria Cross recipient. Later became Air Marshal of the RCAF.
+  Description (FR): Né à Owen Sound, Ontario. Récipiendaire de la Croix de Victoria. Devenu plus tard maréchal de l'air de l'ARC.
+
+- Captain Paul Triquet
+  Role (EN): WWII Victoria Cross Recipient
+  Role (FR): Récipiendaire de la Croix de Victoria, Seconde Guerre mondiale
+  Description (EN): Of Cabano, Quebec. Led men and tanks at Casa Berardi, Italy (1943). Later promoted Brigadier.
+  Description (FR): De Cabano, Québec. A mené ses hommes et des chars à Casa Berardi, Italie (1943). Promu brigadier.
+
+- Lt. Robert Hampton Gray
+  Role (EN): Last Canadian V.C. Recipient
+  Role (FR): Dernier Canadien à recevoir la Croix de Victoria
+  Description (EN): Born in Trail, B.C. Navy pilot killed sinking a Japanese warship in August 1945, days before WWII ended.
+  Description (FR): Né à Trail, C.-B. Pilote de la marine tué en coulant un navire japonais en août 1945, quelques jours avant la fin de la guerre.
+
+- Lt. Col. John McCrae
+  Role (EN): Poet & Soldier
+  Role (FR): Poète et soldat
+  Description (EN): Wrote "In Flanders Fields" (1915), the iconic war poem and symbol of remembrance.
+  Description (FR): A écrit « In Flanders Fields » (1915), le poème de guerre emblématique et symbole du souvenir.
+
+- General Sir Arthur Currie
+  Role (EN): Commander, Canadian Corps
+  Role (FR): Commandant du Corps canadien
+  Description (EN): Led the Canadian Corps in the "Hundred Days" campaign that helped end World War I (1918).
+  Description (FR): A dirigé le Corps canadien lors de la campagne des « Cent Jours » qui a aidé à mettre fin à la Première Guerre mondiale (1918).
+
+Rights Advocates
+================
+- Agnes Macphail
+  Role (EN): First Woman Member of Parliament
+  Role (FR): Première femme députée
+  Description (EN): Elected in 1921 as the first woman to sit in the Canadian House of Commons.
+  Description (FR): Élue en 1921, première femme à siéger à la Chambre des communes du Canada.
+
+- Thérèse Casgrain
+  Role (EN): Women's Rights Advocate
+  Role (FR): Militante pour les droits des femmes
+  Description (EN): Championed women's voting rights in Quebec, achieved in 1940.
+  Description (FR): A défendu le droit de vote des femmes au Québec, obtenu en 1940.
+
+- Dr. Emily Stowe
+  Role (EN): First Woman Doctor in Canada
+  Role (FR): Première femme médecin au Canada
+  Description (EN): First Canadian woman to practise medicine in Canada.
+  Description (FR): Première Canadienne à pratiquer la médecine au Canada.
+
+- Mary Ann Shadd Carey
+  Role (EN): First Woman Publisher in Canada
+  Role (FR): Première femme éditrice au Canada
+  Description (EN): In 1853, became Canada's first woman newspaper publisher, co-founding The Provincial Freeman.
+  Description (FR): En 1853, est devenue la première femme éditrice de journal au Canada, cofondant The Provincial Freeman.
+
+Artists & Culture
+=================
+- Emily Carr
+  Role (EN): Visual Artist
+  Role (FR): Artiste visuelle
+  Description (EN): Renowned painter known for her depictions of British Columbia landscapes and Indigenous culture.
+  Description (FR): Peintre renommée pour ses représentations des paysages de la Colombie-Britannique et de la culture autochtone.
+
+- Tom Thomson
+  Role (EN): Painter
+  Role (FR): Peintre
+  Description (EN): Created "The Jack Pine" and other iconic Canadian landscape paintings. Inspired the Group of Seven.
+  Description (FR): A créé « Le pin gris » et d'autres peintures emblématiques du paysage canadien. A inspiré le Groupe des Sept.
+
+- Jean-Paul Riopelle
+  Role (EN): Artist, Les Automatistes
+  Role (FR): Artiste, Les Automatistes
+  Description (EN): Prominent Quebec artist and member of Les Automatistes movement in the 1950s.
+  Description (FR): Artiste québécois éminent et membre du mouvement des Automatistes dans les années 1950.
+
+Scientists & Inventors
+======================
+- Sir Frederick Banting & Charles Best
+  Role (EN): Discoverers of Insulin
+  Role (FR): Découvreurs de l'insuline
+  Description (EN): Discovered insulin, credited with saving 16 million lives worldwide.
+  Description (FR): Ont découvert l'insuline, sauvant la vie de 16 millions de personnes dans le monde.
+
+- Alexander Graham Bell
+  Role (EN): Inventor
+  Role (FR): Inventeur
+  Description (EN): Developed the concept of the telephone at his summer home in Canada.
+  Description (FR): A développé le concept du téléphone dans sa résidence d'été au Canada.
+
+- Sir Sandford Fleming
+  Role (EN): Engineer & Inventor
+  Role (FR): Ingénieur et inventeur
+  Description (EN): Created the worldwide system of standard time zones still in use today.
+  Description (FR): A créé le système mondial de fuseaux horaires standard encore utilisé aujourd'hui.
+
+- Joseph-Armand Bombardier
+  Role (EN): Inventor
+  Role (FR): Inventeur
+  Description (EN): Invented the snowmobile, later founding Bombardier Inc.
+  Description (FR): A inventé la motoneige, fondant plus tard Bombardier Inc.
+
+- Dr. Wilder Penfield
+  Role (EN): Neurosurgeon
+  Role (FR): Neurochirurgien
+  Description (EN): Pioneering brain surgeon at McGill University in Montreal.
+  Description (FR): Neurochirurgien pionnier à l'Université McGill à Montréal.
+
+- Dr. John A. Hopps
+  Role (EN): Inventor
+  Role (FR): Inventeur
+  Description (EN): Invented the first cardiac pacemaker.
+  Description (FR): A inventé le premier stimulateur cardiaque.
+
+- Marshall McLuhan
+  Role (EN): Communications Theorist
+  Role (FR): Théoricien des communications
+  Description (EN): Shaped modern communications theory with concepts like "the medium is the message."
+  Description (FR): A façonné la théorie moderne des communications avec des concepts comme « le médium est le message ».
+
+Athletes
+========
+- Terry Fox
+  Role (EN): Marathon of Hope
+  Role (FR): Marathon de l'espoir
+  Description (EN): Lost his right leg to cancer at 18. In 1980, began cross-Canada Marathon of Hope to raise cancer research funds.
+  Description (FR): A perdu sa jambe droite à cause du cancer à 18 ans. En 1980, a commencé le Marathon de l'espoir à travers le Canada pour financer la recherche sur le cancer.
+
+- Wayne Gretzky
+  Role (EN): Hockey Legend
+  Role (FR): Légende du hockey
+  Description (EN): Played for the Edmonton Oilers (1979–1988). Considered the greatest hockey player of all time.
+  Description (FR): A joué pour les Oilers d'Edmonton (1979–1988). Considéré comme le plus grand joueur de hockey de tous les temps.
+
+- Donovan Bailey
+  Role (EN): Olympic Sprinter
+  Role (FR): Sprinteur olympique
+  Description (EN): World-record sprinter and double gold medalist at the 1996 Summer Olympics.
+  Description (FR): Sprinteur détenteur du record mondial et double médaillé d'or aux Jeux olympiques d'été de 1996.
+
+- Chantal Petitclerc
+  Role (EN): Paralympic Champion
+  Role (FR): Championne paralympique
+  Description (EN): World champion wheelchair racer and Paralympic gold medalist.
+  Description (FR): Championne du monde de course en fauteuil roulant et médaillée d'or paralympique.
+
+- Paul Henderson
+  Role (EN): Hockey Hero
+  Role (FR): Héros du hockey
+  Description (EN): Scored the winning goal in the 1972 Canada-Soviet Summit Series — "the goal heard around the world."
+  Description (FR): A marqué le but gagnant de la Série du siècle Canada-URSS de 1972 — « le but entendu autour du monde ».
+
+- Rick Hansen
+  Role (EN): Man In Motion
+  Role (FR): L'homme en mouvement
+  Description (EN): Circled the globe in his wheelchair in 1985 to raise funds for spinal cord research.
+  Description (FR): A fait le tour du monde en fauteuil roulant en 1985 pour financer la recherche sur la moelle épinière.
+
+- James Naismith
+  Role (EN): Inventor of Basketball
+  Role (FR): Inventeur du basketball
+  Description (EN): Canadian who invented the sport of basketball in 1891.
+  Description (FR): Canadien qui a inventé le basketball en 1891.
+
