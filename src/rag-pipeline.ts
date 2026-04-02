@@ -18,7 +18,6 @@
 
 import "dotenv/config";
 import { Ollama } from "ollama";
-import { OpenRouter } from "@openrouter/sdk";
 import * as fs from "fs";
 import * as path from "path";
 import { parse } from "csv-parse/sync";
@@ -32,13 +31,48 @@ import {
   type SearchResult,
 } from "./vector-store.js";
 
-// OpenRouter for chat (fast cloud GPUs, free tier)
 // Local Ollama for embeddings (fast, small, free)
-const openrouter = new OpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY ?? "",
-});
-
 const localOllama = new Ollama();
+
+// OpenRouter chat via fetch (fast cloud GPUs, free tier)
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+async function cloudChat(
+  model: string,
+  messages: { role: "system" | "user" | "assistant"; content: string }[]
+): Promise<string> {
+  // Free models may not support system role — merge into first user message
+  const processedMessages: { role: "user" | "assistant"; content: string }[] = [];
+  let systemContent = "";
+
+  for (const msg of messages) {
+    if (msg.role === "system") {
+      systemContent += msg.content + "\n\n";
+    } else {
+      processedMessages.push({ role: msg.role, content: msg.content });
+    }
+  }
+
+  // Prepend system content to first user message
+  if (systemContent && processedMessages.length > 0) {
+    processedMessages[0]!.content = systemContent + processedMessages[0]!.content;
+  }
+
+  const response = await fetch(OPENROUTER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    },
+    body: JSON.stringify({ model, messages: processedMessages }),
+  });
+
+  const data = (await response.json()) as any;
+  if (data.error) {
+    throw new Error(data.error.message ?? JSON.stringify(data.error));
+  }
+  return (data.choices?.[0]?.message?.content ?? "").trim();
+}
 
 // --- Types ---
 
@@ -61,7 +95,7 @@ export interface RAGConfig {
 }
 
 export const DEFAULT_CONFIG: RAGConfig = {
-  chatModel: "qwen/qwen3.6-plus-preview:free",
+  chatModel: "openai/gpt-4o-mini",
   embedModel: "nomic-embed-text",
   topK: 20,
   scoreThreshold: 0.3,
@@ -89,7 +123,7 @@ const MODEL_CONTEXT_WINDOWS: Record<string, number> = {
   "gemma3:27b": 128000,
   "gemma3:4b": 128000,
   "deepseek-r1:7b": 8192,
-  "qwen/qwen3.6-plus-preview:free": 131072,
+  "openai/gpt-4o-mini": 131072,
 };
 
 export interface ContextBudget {
@@ -411,20 +445,13 @@ export async function expandQuery(
     ? `\nThe documents being searched are: ${documentSources.join(", ")}. Use this context to expand abbreviations correctly.`
     : "";
 
-  const response = await openrouter.chat.send({
-    model: chatModel,
-    messages: [
-      {
-        role: "system",
-        content: `You are a search query expander. Given a short query, expand it with synonyms, full forms of abbreviations, and related terms to improve document search. Return ONLY the expanded query on a single line, nothing else. Keep it under 50 words. Do not explain or add commentary.${contextHint}`,
-      },
-      { role: "user", content: query },
-    ],
-  });
-
-  // Always include the original query in the expansion
-  // so keyword search still finds exact matches
-  const expanded = (response.choices[0]?.message?.content ?? "").trim();
+  const expanded = await cloudChat(chatModel, [
+    {
+      role: "system",
+      content: `You are a search query expander. Given a short query, expand it with synonyms, full forms of abbreviations, and related terms to improve document search. Return ONLY the expanded query on a single line, nothing else. Keep it under 50 words. Do not explain or add commentary.${contextHint}`,
+    },
+    { role: "user", content: query },
+  ]);
   return `${query} ${expanded}`;
 }
 
@@ -449,22 +476,16 @@ export async function rerankWithLLM(
     .map((r, i) => `${i + 1}. ${r.chunk.content.slice(0, 200)}`)
     .join("\n\n");
 
-  const response = await openrouter.chat.send({
-    model: chatModel,
-    messages: [
-      {
-        role: "system",
-        content: `You are a relevance judge. Given a query and numbered passages, rank them from most to least relevant. Return ONLY the numbers in order, comma-separated. Example: "3,1,2". Do not explain.`,
-      },
-      {
-        role: "user",
-        content: `Query: "${query}"\n\nPassages:\n${passages}`,
-      },
-    ],
-  });
-
-  // Parse the response — expect comma-separated numbers
-  const text = (response.choices[0]?.message?.content ?? "").trim();
+  const text = await cloudChat(chatModel, [
+    {
+      role: "system",
+      content: `You are a relevance judge. Given a query and numbered passages, rank them from most to least relevant. Return ONLY the numbers in order, comma-separated. Example: "3,1,2". Do not explain.`,
+    },
+    {
+      role: "user",
+      content: `Query: "${query}"\n\nPassages:\n${passages}`,
+    },
+  ]);
   const numbers = text
     .split(/[,\s]+/)
     .map((s) => parseInt(s))
@@ -505,7 +526,7 @@ export function buildRAGPrompt(
   query: string,
   results: HybridSearchResult[],
   conversationHistory?: { role: "user" | "assistant" | "system"; content: string }[]
-): { role: string; content: string }[] {
+): { role: "system" | "user" | "assistant"; content: string }[] {
   const contextParts = results.map((r) => {
     return `[Source: ${r.chunk.metadata.source}, Chunk ${r.chunk.metadata.chunkIndex + 1} (relevance: ${r.hybridScore.toFixed(3)})]
 ${r.chunk.content}`;
@@ -518,14 +539,17 @@ Answer the user's question using ONLY the context below. Be concise. If the answ
 ${contextParts.join("\n\n")}
 --- END CONTEXT ---`;
 
-  const messages: { role: string; content: string }[] = [
+  const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
     { role: "system", content: system },
   ];
 
   // Include conversation history for multi-turn context
   if (conversationHistory) {
     for (const msg of conversationHistory) {
-      messages.push({ role: msg.role, content: msg.content });
+      // Only include user/assistant messages (skip system messages like summaries)
+      if (msg.role === "user" || msg.role === "assistant") {
+        messages.push({ role: msg.role, content: msg.content });
+      }
     }
   }
 
@@ -704,12 +728,7 @@ export async function ragQuery(
   // This is more reliable than trying to filter during streaming.
   const generationStart = Date.now();
 
-  const response = await openrouter.chat.send({
-    model: config.chatModel,
-    messages: messages as any,
-  });
-
-  let answer = (response.choices[0]?.message?.content ?? "").trim();
+  let answer = await cloudChat(config.chatModel, messages);
 
   // Strip <think>...</think> blocks if any
   answer = answer.replace(/<think>[\s\S]*?<\/think>/g, "").trim();

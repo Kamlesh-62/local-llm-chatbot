@@ -35,14 +35,42 @@ function createPrompt(): {
   };
 }
 
-function loadStore(): VectorStore | null {
-  if (!fs.existsSync(DEFAULT_STORE_PATH)) {
-    console.log(
-      `\nNo store found at ${DEFAULT_STORE_PATH}. Run Phase 5 Mode 1 first to ingest documents.`
-    );
+function listStores(): { name: string; path: string }[] {
+  const dataDir = "data";
+  if (!fs.existsSync(dataDir)) return [];
+  return fs.readdirSync(dataDir)
+    .filter((f) => f.endsWith(".json") && f !== "conversations")
+    .map((f) => ({
+      name: f.replace(".json", ""),
+      path: path.join(dataDir, f),
+    }));
+}
+
+async function pickStore(prompt: (q: string) => Promise<string>): Promise<VectorStore | null> {
+  const stores = listStores();
+
+  if (stores.length === 0) {
+    console.log("\nNo stores found in data/. Run Phase 5 Mode 1 first to ingest documents.");
     return null;
   }
-  return VectorStore.load(DEFAULT_STORE_PATH);
+
+  if (stores.length === 1) {
+    console.log(`  Loading: ${stores[0]!.name}`);
+    return VectorStore.load(stores[0]!.path);
+  }
+
+  console.log("\nAvailable document stores:");
+  stores.forEach((s, i) => console.log(`  ${i + 1}. ${s.name}`));
+  console.log();
+
+  const choice = await prompt("Pick a store (number): ");
+  const num = parseInt(choice);
+  if (isNaN(num) || num < 1 || num > stores.length) {
+    console.log("Invalid choice.");
+    return null;
+  }
+
+  return VectorStore.load(stores[num - 1]!.path);
 }
 
 // ============================================
@@ -52,7 +80,7 @@ function loadStore(): VectorStore | null {
 async function modeRAGChatWithMemory(prompt: (q: string) => Promise<string>) {
   console.log("\n--- RAG Chat with Conversation Memory ---\n");
 
-  const store = loadStore();
+  const store = await pickStore(prompt);
   if (!store) return;
 
   const meta = store.getMetadata();
@@ -167,7 +195,7 @@ async function modeExploreMemory(prompt: (q: string) => Promise<string>) {
   console.log("This mode shows how the sliding window and summarization work.");
   console.log("Chat with the bot and watch the memory state change.\n");
 
-  const store = loadStore();
+  const store = await pickStore(prompt);
   if (!store) return;
 
   const memory = new ConversationMemory({ maxTurns: 3 }); // small window for demo
@@ -289,7 +317,7 @@ async function modeLoadConversation(prompt: (q: string) => Promise<string>) {
   console.log("--- Resuming ---\n");
 
   // Continue chatting
-  const store = loadStore();
+  const store = await pickStore(prompt);
   if (!store) return;
 
   const config: RAGConfig = {

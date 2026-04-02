@@ -17,15 +17,47 @@
 // ============================================
 
 import "dotenv/config";
-import { OpenRouter } from "@openrouter/sdk";
 import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 
-// Use OpenRouter for chat (summarization, query rewriting)
-const openrouter = new OpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY ?? "",
-});
+// OpenRouter chat via fetch
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+async function cloudChat(
+  model: string,
+  messages: { role: "system" | "user" | "assistant"; content: string }[]
+): Promise<string> {
+  const processedMessages: { role: "user" | "assistant"; content: string }[] = [];
+  let systemContent = "";
+
+  for (const msg of messages) {
+    if (msg.role === "system") {
+      systemContent += msg.content + "\n\n";
+    } else {
+      processedMessages.push({ role: msg.role, content: msg.content });
+    }
+  }
+
+  if (systemContent && processedMessages.length > 0) {
+    processedMessages[0]!.content = systemContent + processedMessages[0]!.content;
+  }
+
+  const response = await fetch(OPENROUTER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    },
+    body: JSON.stringify({ model, messages: processedMessages }),
+  });
+
+  const data = (await response.json()) as any;
+  if (data.error) {
+    throw new Error(data.error.message ?? JSON.stringify(data.error));
+  }
+  return (data.choices?.[0]?.message?.content ?? "").trim();
+}
 
 // --- Types ---
 
@@ -47,7 +79,7 @@ export interface ConversationConfig {
 export const DEFAULT_CONVERSATION_CONFIG: ConversationConfig = {
   maxTurns: 10,
   maxChars: 4000,
-  summarizeModel: "qwen/qwen3.6-plus-preview:free",
+  summarizeModel: "openai/gpt-4o-mini",
 };
 
 interface ConversationSnapshot {
@@ -172,24 +204,19 @@ export class ConversationMemory {
       ? `Previous summary: ${this.summary}\n\n`
       : "";
 
-    const response = await openrouter.chat.send({
-      model: this.config.summarizeModel,
-      messages: [
-        {
-          role: "system",
-          content:
-            "Summarize this conversation in 2-3 sentences. Focus on: key topics discussed, important facts mentioned, and any questions that were answered. Be concise.",
-        },
-        {
-          role: "user",
-          content: `${existingSummary}Conversation to summarize:\n${oldText}`,
-        },
-      ],
-    });
+    const result = await cloudChat(this.config.summarizeModel, [
+      {
+        role: "system",
+        content:
+          "Summarize this conversation in 2-3 sentences. Focus on: key topics discussed, important facts mentioned, and any questions that were answered. Be concise.",
+      },
+      {
+        role: "user",
+        content: `${existingSummary}Conversation to summarize:\n${oldText}`,
+      },
+    ]);
 
-    this.summary = (response.choices[0]?.message?.content ?? "")
-      .replace(/<think>[\s\S]*?<\/think>/g, "")
-      .trim();
+    this.summary = result.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
 
     return this.summary;
   }
@@ -329,23 +356,16 @@ export async function refineQueryWithHistory(
     .map((m) => `${m.role}: ${m.content.slice(0, 150)}`)
     .join("\n");
 
-  const response = await openrouter.chat.send({
-    model,
-    messages: [
-      {
-        role: "system",
-        content: `Given a conversation and a follow-up question, rewrite the follow-up as a standalone search query. Replace pronouns (it, this, that, they) with the actual thing they refer to. Return ONLY the rewritten query, nothing else. If the question is already standalone, return it unchanged.`,
-      },
-      {
-        role: "user",
-        content: `Conversation:\n${historyText}\n\nFollow-up question: ${query}\n\nStandalone query:`,
-      },
-    ],
-  });
-
-  const refined = (response.choices[0]?.message?.content ?? "")
-    .replace(/<think>[\s\S]*?<\/think>/g, "")
-    .trim();
+  const refined = (await cloudChat(model, [
+    {
+      role: "system",
+      content: `Given a conversation and a follow-up question, rewrite the follow-up as a standalone search query. Replace pronouns (it, this, that, they) with the actual thing they refer to. Return ONLY the rewritten query, nothing else. If the question is already standalone, return it unchanged.`,
+    },
+    {
+      role: "user",
+      content: `Conversation:\n${historyText}\n\nFollow-up question: ${query}\n\nStandalone query:`,
+    },
+  ])).replace(/<think>[\s\S]*?<\/think>/g, "").trim();
 
   // If LLM returned something reasonable, use it; otherwise keep original
   if (refined && refined.length > 3 && refined.length < 500) {

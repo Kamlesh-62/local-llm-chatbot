@@ -187,7 +187,15 @@ async function modeIngest(prompt: (q: string) => Promise<string>) {
     DEFAULT_CONFIG.embedModel
   );
 
-  store.save(DEFAULT_STORE_PATH);
+  // Save with a descriptive name
+  const defaultName = filePaths.length === 1
+    ? path.basename(filePaths[0]!, path.extname(filePaths[0]!))
+    : "all-docs";
+  const nameInput = await prompt(`Store name (default: ${defaultName}): `);
+  const storeName = nameInput.trim() || defaultName;
+  const storePath = `data/${storeName}.json`;
+
+  store.save(storePath);
 
   const meta = store.getMetadata();
   const budget = calculateContextBudget(store, DEFAULT_CONFIG.chatModel);
@@ -196,7 +204,7 @@ async function modeIngest(prompt: (q: string) => Promise<string>) {
   console.log(`  Chunks: ${meta.count}`);
   console.log(`  Dimensions: ${meta.dimensions}`);
   console.log(`  Sources: ${meta.sources.join(", ")}`);
-  console.log(`  Saved to: ${DEFAULT_STORE_PATH}`);
+  console.log(`  Saved to: ${storePath}`);
 
   console.log(`\nContext window budget (${DEFAULT_CONFIG.chatModel}):`);
   console.log(`  Context window:    ${budget.contextWindow.toLocaleString()} tokens`);
