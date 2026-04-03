@@ -58,14 +58,21 @@ async function cloudChat(
     processedMessages[0]!.content = systemContent + processedMessages[0]!.content;
   }
 
-  const response = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-    },
-    body: JSON.stringify({ model, messages: processedMessages }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify({ model, messages: processedMessages }),
+    });
+  } catch (err: any) {
+    const cause = err.cause ? ` | cause: ${err.cause.message ?? err.cause.code ?? err.cause}` : "";
+    const keySet = !!process.env.OPENROUTER_API_KEY;
+    throw new Error(`Cloud chat fetch failed (key set: ${keySet}, url: ${OPENROUTER_URL}${cause})`);
+  }
 
   const data = (await response.json()) as any;
   if (data.error) {
@@ -95,7 +102,7 @@ export interface RAGConfig {
 }
 
 export const DEFAULT_CONFIG: RAGConfig = {
-  chatModel: "openai/gpt-4o-mini",
+  chatModel: "nvidia/nemotron-3-super-120b-a12b:free",
   embedModel: "nomic-embed-text",
   topK: 20,
   scoreThreshold: 0.3,
@@ -124,6 +131,7 @@ const MODEL_CONTEXT_WINDOWS: Record<string, number> = {
   "gemma3:4b": 128000,
   "deepseek-r1:7b": 8192,
   "openai/gpt-4o-mini": 131072,
+  "nvidia/nemotron-3-super-120b-a12b:free": 262144,
 };
 
 export interface ContextBudget {

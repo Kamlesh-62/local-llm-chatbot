@@ -1,4 +1,8 @@
 node_modules/
 dist/
-*.pdf
 .env
+
+# Generated data (created by npm run setup or Phase 5)
+sample-docs/
+data/*.json
+data/conversations/

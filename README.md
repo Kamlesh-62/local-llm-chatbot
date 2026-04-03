@@ -1,24 +1,60 @@
-# Build a RAG Chatbot from Scratch with Local LLMs
+# Build a RAG Chatbot from Scratch
 
-A hands-on, phase-by-phase guide to building a Retrieval-Augmented Generation (RAG) chatbot using TypeScript, Ollama, and local LLMs. Each phase introduces one concept, builds on the previous one, and includes real discoveries from building it — what worked, what failed, and why.
+A hands-on, phase-by-phase guide to building a Retrieval-Augmented Generation (RAG) chatbot using TypeScript. Start with a simple LLM chat, progress through embeddings and vector search, and end with a multi-agent system — all built from scratch with real code you can study and modify.
+
+```
+Your Documents → Chunk → Embed → Search → LLM → Answer with Citations
+```
 
 ## What You'll Build
 
-A chatbot that reads your documents, understands them, and answers questions with source citations — running entirely on your machine (with optional cloud for bigger models).
+By the end, you'll have a chatbot that:
+- Reads any document (.txt, .csv, .json, .md, .pdf, .docx)
+- Breaks it into chunks and embeds them as vectors
+- Searches using hybrid keyword + semantic search
+- Answers questions with source citations
+- Remembers conversation context across turns
+- Uses tools (search, read files, calculate) via an agent loop
+- Coordinates multiple specialist agents that collaborate
 
-## Learning Path
+## What You'll Learn
 
-| Phase | Concept | What You Build | Guide |
-|-------|---------|---------------|-------|
-| 1 | LLM Basics | CLI chatbot with streaming + conversation memory | [Guide](docs/phase1-foundations.md) |
-| 2 | File Reading | Read .txt, .json, .csv, .md, .pdf, .docx and feed to LLM | [Guide](docs/phase2-file-reading.md) |
-| 3 | Chunking | 5 strategies to break documents into pieces | [Guide](docs/phase3-chunking.md) |
-| 4 | Embeddings | Vector store with semantic search from scratch | [Guide](docs/phase4-embeddings.md) |
-| 5 | RAG Pipeline | Hybrid search, query expansion, source citations | [Guide](docs/phase5-rag-pipeline.md) |
-| 6 | Conversation Memory | Sliding window, summarization, persistent chat | [Guide](docs/phase6-memory.md) |
-| 7-10 | Coming soon | Agents, multi-agent, web UI, production | [Roadmap](docs/learning-plan.md) |
+| Concept | Phase | Why It Matters |
+|---------|-------|---------------|
+| LLM basics (roles, streaming, history) | 1 | Foundation for everything |
+| File parsing (5 formats) | 2 | Real documents aren't just text |
+| Chunking strategies (5 methods) | 3 | LLMs have token limits |
+| Embeddings & vector search | 4 | How machines understand meaning |
+| RAG pipeline | 5 | The core pattern behind ChatGPT + docs |
+| Conversation memory | 6 | Multi-turn context management |
+| Agent tool use (ReAct pattern) | 7 | LLMs that take actions |
+| Multi-agent orchestration | 8 | Specialist agents that collaborate |
 
-Each guide includes: concepts, architecture diagrams, key code, what we discovered (real failures and fixes), industry context, and limitations.
+---
+
+## Two Learning Tracks
+
+This project teaches **two approaches** to using LLMs:
+
+### Track 1: Local LLM (Phases 1–4) — No API Key Needed
+
+Everything runs on **your machine** via [Ollama](https://ollama.com). Free, private, no internet required.
+
+- **Chat model**: `llama3.2` (2GB, runs on any modern machine)
+- **Embedding model**: `nomic-embed-text` (274MB, produces 768-dim vectors)
+- **You learn**: LLM basics, file reading, chunking, embeddings, vector search
+- **Cost**: $0
+
+### Track 2: Cloud LLM (Phases 5–8) — Free OpenRouter API
+
+Chat moves to [OpenRouter](https://openrouter.ai) (free tier). Embeddings stay local on Ollama.
+
+- **Chat model**: `nvidia/nemotron-3-super-120b-a12b:free` (120B params, free)
+- **Embedding model**: `nomic-embed-text` (still local)
+- **You learn**: RAG pipeline, memory, agents, multi-agent systems
+- **Cost**: $0 (free tier)
+
+**Why the switch?** Local models (3-7B parameters) work fine for basic chat but struggle with complex RAG prompts, tool calling, and multi-step reasoning. Cloud models (120B+ parameters) follow instructions much better. Embeddings stay local because `nomic-embed-text` is excellent and fast.
 
 ---
 
@@ -26,161 +62,409 @@ Each guide includes: concepts, architecture diagrams, key code, what we discover
 
 - **Node.js** v18+ ([download](https://nodejs.org))
 - **Ollama** ([download](https://ollama.com)) — runs LLMs locally
-
-### Pull the required models
-
-```bash
-# Chat models (pick one or more)
-ollama pull llama3.2          # 2GB, fast, good starting point
-ollama pull deepseek-r1:7b    # 4.7GB, reasoning model (slower, outputs <think> blocks)
-
-# Embedding model (needed from Phase 4 onwards)
-ollama pull nomic-embed-text  # 274MB, produces 768-dim vectors
-```
-
-### Optional: Ollama Cloud (bigger models, better answers)
-
-Create an account at [ollama.com](https://ollama.com), get an API key, and add to `.env`:
-```bash
-OLLAMA_API_KEY=your_key_here
-```
-This gives access to 27B-671B parameter models (gemma3:27b, deepseek-v3.1:671b, etc.) while embeddings stay local.
+- **OpenRouter API key** (free, needed for Phases 5-8) — [get one here](https://openrouter.ai/keys)
 
 ---
 
 ## Quick Start
 
 ```bash
+# 1. Clone and install
 git clone <your-repo-url>
-cd chatbot
+cd local-llm-chatbot
 npm install
 
-# Run any phase
-npm run phase1   # Basic chat
-npm run phase2   # File reader chat
-npm run phase3   # Chunking strategies
-npm run phase4   # Embeddings & vector store
-npm run phase5   # Full RAG pipeline
-npm run phase6   # Conversation memory
+# 2. Pull Ollama models
+ollama pull llama3.2            # Chat model for Phases 1-4
+ollama pull nomic-embed-text    # Embedding model for Phases 4-8
+
+# 3. Generate sample documents
+npm run setup
+
+# 4. Start learning! (no API key needed for Phase 1)
+npm run phase1
 ```
+
+For Phases 5-8, set up your OpenRouter key:
+```bash
+cp .env.example .env
+# Edit .env and add your OpenRouter API key
+```
+
+---
+
+## Phase-by-Phase Guide
+
+### Phase 1: Foundations — Talk to Ollama
+
+> **Track**: Local LLM | **Run**: `npm run phase1` | **Code**: `src/phase1-chat.ts`
+
+**What you'll learn**: How LLMs work at the API level — sending messages, receiving responses, managing conversation history.
+
+**Key concepts**:
+- **Message roles**: `system` (instructions), `user` (you), `assistant` (LLM)
+- **Streaming**: Get tokens as they're generated instead of waiting for the full response
+- **Conversation history**: LLMs are stateless — you must send the entire conversation each time
+- **Temperature**: Controls randomness (0 = deterministic, 1 = creative)
+
+**What to expect**: A CLI chatbot where you type questions and the LLM responds. It remembers your conversation within the session.
+
+**Key takeaway**: An LLM is just a function: `messages[] → text`. Everything else (memory, retrieval, agents) is built on top of this.
+
+---
+
+### Phase 2: File Reading & Text Processing
+
+> **Track**: Local LLM | **Run**: `npm run phase2` | **Code**: `src/phase2-file-reader.ts`
+
+**What you'll learn**: How to read different file formats and feed their content to an LLM as context.
+
+**Key concepts**:
+- **File parsing**: Each format needs its own parser (.txt is easy, PDF is hard)
+- **Context injection**: Stuff the file content into the system prompt so the LLM can reference it
+- **Token limits**: You can't feed a 100-page PDF into a prompt — LLMs have context windows (4K-128K tokens)
+- **Supported formats**: `.txt`, `.md`, `.csv`, `.json`, `.pdf`, `.docx`
+
+**Try it**: Point it at any of the sample files generated by `npm run setup`:
+```
+sample-docs/world-countries.txt    → Ask "What is the capital of Japan?"
+sample-docs/scientists.md          → Ask "Who won two Nobel Prizes?"
+sample-docs/cities-data.csv        → Ask "Which city has the most population?"
+sample-docs/inventions.json        → Ask "When was the internet invented?"
+```
+
+**Key takeaway**: Small files work great as context. Large files don't fit — that's why we need chunking (Phase 3).
+
+---
+
+### Phase 3: Chunking Strategies
+
+> **Track**: Local LLM | **Run**: `npm run phase3` | **Code**: `src/phase3-chunking.ts`, `src/chunker.ts`
+
+**What you'll learn**: Why and how to break documents into smaller pieces.
+
+**Key concepts**:
+- **Why chunk?** LLMs have token limits. A 50-page document has ~25,000 tokens. Most models accept 4K-8K. Even with 128K context, smaller chunks = more precise retrieval.
+- **5 chunking strategies** (all implemented in `src/chunker.ts`):
+
+| Strategy | How it works | Best for |
+|----------|-------------|----------|
+| Fixed-size | Split every N characters | Simple, predictable |
+| Sentence | Split on `.` `!` `?` | Natural language text |
+| Paragraph | Split on double newlines | Well-formatted docs |
+| Recursive | Try large splits first, fall back to smaller | General purpose |
+| Semantic | Split when topic changes (using embeddings) | Topic-diverse docs |
+
+- **Overlap**: Chunks share some text at boundaries so context isn't lost at split points
+
+**Try it**: Mode 1 lets you chunk a file with different strategies and compare the results side by side.
+
+**Key takeaway**: Chunking quality directly affects retrieval quality. Bad chunks = bad answers.
+
+---
+
+### Phase 4: Embeddings & Vector Store
+
+> **Track**: Local LLM | **Run**: `npm run phase4` | **Code**: `src/phase4-vectors.ts`, `src/vector-store.ts`
+
+**What you'll learn**: How to convert text into numbers (vectors) and search by meaning.
+
+**Key concepts**:
+- **Embeddings**: Text → array of 768 numbers. Similar meaning = similar numbers.
+  ```
+  "cat" → [0.12, -0.34, 0.56, ...]
+  "dog" → [0.11, -0.31, 0.58, ...]  ← similar!
+  "car" → [-0.45, 0.22, -0.11, ...] ← different
+  ```
+- **Cosine similarity**: Measures angle between two vectors (1.0 = identical, 0.0 = unrelated)
+- **Vector store**: Built from scratch in `src/vector-store.ts` — no external database needed
+- **Semantic search**: "What year was the country founded?" matches "Confederation in 1867" even though no words match
+
+**Try it**:
+- Mode 1: Embed text and see the raw numbers
+- Mode 2: Build a store from your sample docs
+- Mode 3: Search the store with natural language queries
+- Mode 4: Compare two texts for similarity
+
+**Key takeaway**: Embeddings let you search by **meaning**, not just keywords. This is the foundation of RAG.
+
+---
+
+### Phase 5: RAG Pipeline (Core Milestone)
+
+> **Track**: Cloud LLM + Local embeddings | **Run**: `npm run phase5` | **Code**: `src/phase5-rag.ts`, `src/rag-pipeline.ts`
+
+**What you'll learn**: The complete RAG flow — the pattern behind "chat with your docs" products.
+
+**Key concepts**:
+- **The RAG flow**:
+  ```
+  Question → Embed → Search vector store → Retrieve top chunks → Build prompt → LLM generates answer → Cite sources
+  ```
+- **Hybrid search**: Combines keyword matching + embedding similarity (neither alone is enough)
+- **Query expansion**: LLM expands abbreviations and synonyms before searching
+- **Re-ranking**: LLM scores retrieved chunks for relevance
+- **Source attribution**: Every answer cites which document and chunk it came from
+- **Context window budgeting**: Automatically calculates how many chunks fit in the model's context
+
+**Try it**:
+1. Mode 1: Ingest your sample docs into a vector store
+2. Mode 2: Ask questions — watch retrieval + generation in action
+3. Mode 3: Debug mode — see search scores, chunk content, timing
+
+**Example questions** (using sample data):
+```
+"Who invented the printing press?"          → searches inventions.json
+"Which planet has the strongest winds?"     → searches solar-system.txt
+"Compare the population of Tokyo and London" → searches cities-data.csv
+```
+
+**Key takeaway**: RAG grounds the LLM in your documents. Without it, the LLM guesses from training data. With it, the LLM answers from **your** data.
+
+---
+
+### Phase 6: Conversation Memory
+
+> **Track**: Cloud LLM + Local embeddings | **Run**: `npm run phase6` | **Code**: `src/phase6-memory.ts`, `src/conversation.ts`
+
+**What you'll learn**: How to maintain coherent multi-turn conversations while doing RAG.
+
+**Key concepts**:
+- **The problem**: LLMs are stateless. Each call starts fresh. "What about *that* planet?" has no meaning without prior context.
+- **Sliding window**: Keep the last N turns in the prompt. Old messages get dropped.
+- **Auto-summarization**: When the window fills up, the LLM summarizes old messages into a compact paragraph. This preserves key context while saving tokens.
+- **Query refinement**: "How big is it?" → LLM rewrites to "How big is Jupiter?" using conversation history
+- **Context budgeting**: History + retrieved chunks + system prompt must all fit in the context window
+
+**Try it**:
+1. Mode 1: RAG chat with memory — ask follow-up questions that reference earlier answers
+2. Mode 2: Explore memory — watch the sliding window and summarization in action
+3. Mode 3: Save/load conversations — persist chat sessions to disk
+
+**Test multi-turn context**:
+```
+You: What is the largest planet?
+AI: Jupiter...
+You: How many moons does it have?     ← "it" = Jupiter (resolved from history)
+You: Compare it to the smallest one   ← "it" = Jupiter, "smallest" = Mercury
+```
+
+**Key takeaway**: Memory management is a core challenge. You're constantly balancing "remember everything" vs "fit in the context window."
+
+---
+
+### Phase 7: Agents & Tool Use
+
+> **Track**: Cloud LLM + Local embeddings | **Run**: `npm run phase7` | **Code**: `src/phase7-agents.ts`, `src/agent.ts`
+
+**What you'll learn**: How to give the LLM the ability to **take actions**, not just answer questions.
+
+**Key concepts**:
+- **ReAct pattern**: The LLM loops through: Thought → Action → Observation → repeat
+  ```
+  Thought: "I need to search for information about Einstein"
+  Action: searchDocuments({"query": "Einstein"})
+  Observation: "Albert Einstein (1879-1955)..."
+  Thought: "Now I have the answer"
+  Final Answer: "Einstein was a physicist who..."
+  ```
+- **Tools**: Functions the LLM can call:
+  - `searchDocuments` — search the vector store
+  - `readFile` — read raw file contents
+  - `listFiles` — browse available files
+  - `calculator` — evaluate math expressions
+- **3 agent modes**:
+  - **Fast**: Single RAG lookup → direct answer (fastest)
+  - **Think**: RAG + step-by-step reasoning (balanced)
+  - **React**: Full tool loop, multi-step reasoning (most capable)
+- **JSON-in-text parsing**: The LLM outputs structured tool calls as text, parsed by regex
+
+**Try it**:
+1. Mode 1: Agent Chat — ask questions, watch the agent reason and use tools
+2. Mode 2: Single Tool Test — test each tool directly without the LLM
+3. Mode 3: Agent Trace — see the full reasoning trace for one question
+
+**Example multi-step question**:
+```
+"List the available files, then tell me which invention had the biggest impact"
+→ Agent calls listFiles → then searchDocuments → then reasons → Final Answer
+```
+
+**Key takeaway**: Agents turn LLMs from question-answerers into problem-solvers. The ReAct loop is the foundation of modern AI agents (like Claude, ChatGPT plugins, etc.).
+
+---
+
+### Phase 8: Multi-Agent System
+
+> **Track**: Cloud LLM + Local embeddings | **Run**: `npm run phase8` | **Code**: `src/phase8-multi-agent.ts`, `src/multi-agent.ts`
+
+**What you'll learn**: How multiple specialized agents collaborate to answer complex questions.
+
+**Key concepts**:
+- **Specialist agents**: Each has a focused role:
+  - **Research Agent** (react mode) — deep document search, multiple queries
+  - **Summarizer Agent** (think mode) — condenses content into clear summaries
+  - **QA Agent** (think mode) — validates and fact-checks claims
+  - **General Agent** (fast mode) — handles non-document questions
+- **Router Agent**: A supervisor that analyzes your question and dispatches to the right specialist
+- **Blackboard pattern**: Shared state where agents write findings for others to read
+- **3 orchestration patterns**:
+  - **Supervisor**: Router decides which agent(s) to call
+  - **Pipeline**: research → summarize → QA (sequential)
+  - **Parallel**: fan-out to multiple agents, merge results
+
+**Try it**:
+1. Mode 1: Supervisor Chat — router picks agents automatically
+2. Mode 2: Pipeline Demo — watch research → summarize → validate chain
+3. Mode 3: Parallel Demo — two agents run simultaneously, results merged
+4. Mode 4: Agent Inspector — test one specialist in isolation
+
+**Key takeaway**: Complex tasks benefit from decomposition. A team of focused agents often outperforms one general-purpose agent.
 
 ---
 
 ## Project Structure
 
 ```
-chatbot/
+local-llm-chatbot/
+├── scripts/
+│   └── setup.ts                  # Generates sample documents
 ├── src/
-│   ├── phase1-chat.ts          # Phase 1: Basic Ollama chat
-│   ├── phase2-file-reader.ts   # Phase 2: Read files + chat about them
-│   ├── chunker.ts              # Phase 3: Reusable chunking module (5 strategies)
-│   ├── phase3-chunking.ts      # Phase 3: Chunking demo (3 modes)
-│   ├── vector-store.ts         # Phase 4: VectorStore class + cosine similarity
-│   ├── phase4-vectors.ts       # Phase 4: Embeddings demo (4 modes)
-│   ├── rag-pipeline.ts         # Phase 5: Hybrid search, RAG orchestration
-│   ├── phase5-rag.ts           # Phase 5: RAG demo (4 modes)
-│   ├── conversation.ts         # Phase 6: ConversationMemory class
-│   └── phase6-memory.ts        # Phase 6: Memory demo (3 modes)
-├── sample-docs/                # Test documents
-│   ├── PDF/                    # Chapter PDFs (13 files)
-│   ├── TEXT/                   # Chapter text files (13 files)
-│   ├── sections/               # Chapter JSON metadata (12 files)
-│   ├── important-dates.md      # Markdown sample
-│   ├── important-people.txt    # Text sample
-│   └── provinces-capitals.csv  # CSV sample
-├── data/                       # Vector stores + saved conversations (runtime)
-├── docs/                       # Learning guides
-│   ├── learning-plan.md        # Full 10-phase roadmap
-│   ├── phase1-foundations.md   # Phase 1 deep dive
-│   ├── phase2-file-reading.md  # Phase 2 deep dive
-│   ├── phase3-chunking.md      # Phase 3 deep dive
-│   ├── phase4-embeddings.md    # Phase 4 deep dive
-│   ├── phase5-rag-pipeline.md  # Phase 5 deep dive
-│   └── phase6-memory.md        # Phase 6 deep dive
-├── .env                        # Ollama Cloud API key (optional, gitignored)
+│   ├── phase1-chat.ts            # Phase 1: Basic Ollama chat
+│   ├── phase2-file-reader.ts     # Phase 2: Multi-format file reader
+│   ├── chunker.ts                # Phase 3: Reusable chunking module (5 strategies)
+│   ├── phase3-chunking.ts        # Phase 3: Chunking demo
+│   ├── vector-store.ts           # Phase 4: VectorStore class + cosine similarity
+│   ├── phase4-vectors.ts         # Phase 4: Embeddings demo
+│   ├── rag-pipeline.ts           # Phase 5: RAG orchestration + hybrid search
+│   ├── phase5-rag.ts             # Phase 5: RAG demo
+│   ├── conversation.ts           # Phase 6: ConversationMemory class
+│   ├── phase6-memory.ts          # Phase 6: Memory demo
+│   ├── agent.ts                  # Phase 7: Agent framework (ReAct + tools)
+│   ├── phase7-agents.ts          # Phase 7: Agent demo
+│   ├── multi-agent.ts            # Phase 8: Multi-agent orchestration
+│   └── phase8-multi-agent.ts     # Phase 8: Multi-agent demo
+├── sample-docs/                  # Generated by npm run setup
+├── data/                         # Vector stores (generated by Phase 5)
+├── docs/
+│   └── learning-plan.md          # Full 10-phase roadmap
+├── .env.example                  # Template for API keys
 ├── package.json
 └── tsconfig.json
 ```
 
-**Architecture pattern**: Each phase has a **reusable module** (chunker.ts, vector-store.ts, etc.) and a **demo script** (phase3-chunking.ts, etc.). Modules are imported by later phases. Demo scripts are self-contained with interactive modes.
+**Architecture pattern**: Each phase has a **reusable module** (chunker.ts, vector-store.ts, agent.ts, etc.) and a **demo script** (phase3-chunking.ts, phase7-agents.ts, etc.). Modules are imported by later phases. Demo scripts are interactive with multiple modes.
 
 ---
 
-## Key Discoveries
-
-Things we learned the hard way while building this:
-
-| Discovery | Phase | What happened |
-|-----------|-------|---------------|
-| **PDF text extraction loses layout** | 2 | Tables and glossaries become garbled text. Claude reads PDFs as images — we extract text. |
-| **187 seconds for one answer** | 2 | Stuffing a 25-page PDF into the prompt with deepseek-r1:7b. Chunking (Phase 3) fixed this. |
-| **Keyword search can't understand meaning** | 3 | "When did Canada become a country?" doesn't match "Confederation 1867" — exact words only. |
-| **Embedding search fails on abbreviations** | 4 | "RCMP" produces a weak vector. The model doesn't know what it stands for. |
-| **Neither search alone is enough** | 4-5 | Keywords find exact matches, embeddings find meaning. You need both (hybrid search). |
-| **Query expansion can be wrong** | 5 | LLM expanded "RCMP" as "Remote Control Media Player" — wrong domain entirely. |
-| **Small models return empty answers** | 5 | llama3.2 (3B) and deepseek-r1:7b struggled with messy PDF text. gemma3:27b (cloud) worked. |
-| **`<think>` blocks cause invisible output** | 5 | deepseek-r1 outputs reasoning in `<think>` tags — must strip them before displaying. |
-| **Simpler prompts work better** | 5 | Complex multi-rule prompts confused small models. One-line instruction worked. |
-| **LLM understands "he" but search doesn't** | 6 | LLM resolves pronouns from history, but the search query "What party did he lead?" finds nothing useful. |
-| **LLM-based query rewriting > regex** | 6 | Asking the LLM to rewrite follow-ups as standalone queries is much smarter than checking for pronouns or references. |
-
----
-
-## Key Concepts
-
-### RAG (Retrieval-Augmented Generation)
-Instead of asking the LLM to answer from its training data, you **retrieve** relevant chunks from your documents, **augment** the prompt with that context, then let the LLM **generate** a grounded answer.
+## Architecture
 
 ```
-Question → Retrieve relevant chunks → Add to prompt → LLM generates answer with citations
+Phase 1-2: Simple chat
+  User → Ollama → Response
+
+Phase 3-4: Embeddings
+  Document → Chunk → Embed → VectorStore
+  Query → Embed → Search → Top-K chunks
+
+Phase 5-6: RAG Pipeline
+  Query → Embed (Ollama) → Hybrid Search → Build Prompt → Cloud LLM (OpenRouter) → Answer + Sources
+                                                          ↑ Conversation Memory
+
+Phase 7: Agent
+  Query → Agent Loop [Thought → Tool Call → Observation → ...] → Final Answer
+                       ↓
+           searchDocuments | readFile | listFiles | calculator
+
+Phase 8: Multi-Agent
+  Query → Router Agent → [Research | Summarizer | QA | General] → Synthesized Answer
+                              ↓           ↓         ↓
+                         (react mode) (think mode) (think mode)
 ```
-
-### Keyword Search vs Embedding Search vs Hybrid
-
-| | Keyword | Embedding | Hybrid |
-|---|---------|-----------|--------|
-| "When did Canada become a country?" matches "Confederation 1867" | No | Yes | Yes |
-| "RCMP" matches "RCMP" | Yes | Weak | Yes |
-| Understands meaning | No | Yes | Yes |
-| Finds exact terms | Yes | Not always | Yes |
-
-### Why "Prompt Engineering Is Dead" Is Wrong (for RAG)
-
-Articles about prompt engineering dying refer to manual tweaking for general chat. RAG prompts are **system design** — "answer ONLY from context", "cite sources", "say I don't know". LLMs can't guess your requirements. This is architecture, not tricks.
 
 ---
 
 ## Tech Stack
 
-| Component | Tool | Phase |
-|-----------|------|-------|
-| Language | TypeScript | All |
-| Runtime | Node.js + tsx | All |
-| LLM (local) | Ollama (llama3.2 / deepseek-r1:7b) | All |
-| LLM (cloud) | Ollama Cloud (gemma3:27b+) | 5+ |
-| Embeddings | Ollama (nomic-embed-text, 768d) | 4+ |
-| PDF Parsing | pdfjs-dist | 2+ |
-| DOCX Parsing | mammoth | 5+ |
-| CSV Parsing | csv-parse | 2+ |
-| Env Config | dotenv | 5+ |
-| Vector Store | Custom (built from scratch) | 4+ |
-| Chat Persistence | JSON files | 6+ |
+| Component | Tool | Why |
+|-----------|------|-----|
+| Language | TypeScript | Type safety + great tooling |
+| Runtime | Node.js + tsx | Run TS directly, no build step |
+| Local LLM | Ollama | Free, private, runs on your machine |
+| Cloud LLM | OpenRouter | Free tier, access to 120B+ models |
+| Embeddings | nomic-embed-text (via Ollama) | Fast, local, 768-dim vectors |
+| PDF Parsing | pdfjs-dist | Extract text from PDFs |
+| DOCX Parsing | mammoth | Extract text from Word docs |
+| CSV Parsing | csv-parse | Parse tabular data |
+| Vector Store | Custom (built from scratch) | Learn how it works, no black box |
 
 ---
 
-## Full Roadmap
+## Supported File Formats
 
-See [`docs/learning-plan.md`](docs/learning-plan.md) for the complete 10-phase plan:
+| Format | Parser | Phase |
+|--------|--------|-------|
+| `.txt` | `fs.readFileSync` | 2+ |
+| `.md` | `fs.readFileSync` | 2+ |
+| `.csv` | `csv-parse` | 2+ |
+| `.json` | `JSON.parse` | 2+ |
+| `.pdf` | `pdfjs-dist` | 2+ |
+| `.docx` | `mammoth` | 5+ |
 
-| Phase | Topic | Status |
-|-------|-------|--------|
-| 1-6 | Foundations → Memory | Done |
-| 7 | Agents & Tool Use | Planned |
-| 8 | Multi-Agent System | Planned |
-| 9 | Web UI & API | Planned |
-| 10 | Production Hardening | Planned |
+To test with your own documents, drop any file into `sample-docs/` and run Phase 5 to ingest it.
 
-Phase 5 is the **core milestone** — a fully working RAG chatbot. Everything after adds capabilities on top.
+---
+
+## Using Your Own Documents
+
+The sample docs generated by `npm run setup` are great for learning, but the real power is using **your own** documents:
+
+1. Place your files in `sample-docs/` (any supported format)
+2. Run Phase 5: `npm run phase5` → Mode 1 (Ingest Documents)
+3. Select your files and create a vector store
+4. Use Phase 5-8 to query your documents
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `fetch failed` | Check if Ollama is running: `ollama serve` |
+| `Error: fetch failed` on Phase 5+ | Check OpenRouter API key in `.env` |
+| Slow responses on Phase 5+ | Free models can have queue times. Wait 30-60s. |
+| `nomic-embed-text` not found | Run `ollama pull nomic-embed-text` |
+| Empty answers | Try a different model or check your document store has data |
+| `address already in use` | Ollama is already running — this is fine |
+
+---
+
+## Key Discoveries
+
+Things learned the hard way while building this:
+
+| Discovery | Phase | What happened |
+|-----------|-------|---------------|
+| PDF text extraction loses layout | 2 | Tables become garbled text |
+| Keyword search can't understand meaning | 3-4 | "founding year" doesn't match "established in 1867" |
+| Neither search alone is enough | 4-5 | Keywords find exact matches, embeddings find meaning — use both |
+| Small models struggle with RAG | 5 | 3-7B models ignore instructions. 120B+ models follow them well |
+| `<think>` blocks cause invisible output | 5 | Some models output reasoning in tags — must strip them |
+| Simpler prompts work better | 5 | One-line instruction > complex multi-rule prompts |
+| LLM-based query rewriting > regex | 6 | Ask the LLM to resolve pronouns, don't try regex |
+| Agents need conversation memory | 7 | Without history, "are you sure?" has no context |
+| System prompts bias agent behavior | 8 | "Canadian citizenship expert" prompt made agent ignore other documents |
+
+---
+
+## What's Next (Phases 9-10)
+
+| Phase | Topic | Description |
+|-------|-------|-------------|
+| 9 | Web UI & API | REST API + React frontend with streaming |
+| 10 | Production | Docker, tests, logging, monitoring |
+
+See [`docs/learning-plan.md`](docs/learning-plan.md) for the full 10-phase roadmap.
 
 ---
 

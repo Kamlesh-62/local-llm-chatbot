@@ -43,14 +43,21 @@ async function cloudChat(
     processedMessages[0]!.content = systemContent + processedMessages[0]!.content;
   }
 
-  const response = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-    },
-    body: JSON.stringify({ model, messages: processedMessages }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify({ model, messages: processedMessages }),
+    });
+  } catch (err: any) {
+    const cause = err.cause ? ` | cause: ${err.cause.message ?? err.cause.code ?? err.cause}` : "";
+    const keySet = !!process.env.OPENROUTER_API_KEY;
+    throw new Error(`Cloud chat fetch failed (key set: ${keySet}, url: ${OPENROUTER_URL}${cause})`);
+  }
 
   const data = (await response.json()) as any;
   if (data.error) {
@@ -79,7 +86,7 @@ export interface ConversationConfig {
 export const DEFAULT_CONVERSATION_CONFIG: ConversationConfig = {
   maxTurns: 10,
   maxChars: 4000,
-  summarizeModel: "openai/gpt-4o-mini",
+  summarizeModel: "nvidia/nemotron-3-super-120b-a12b:free",
 };
 
 interface ConversationSnapshot {

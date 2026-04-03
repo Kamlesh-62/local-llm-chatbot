@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "setup": "npx tsx scripts/setup.ts",
     "phase1": "npx tsx src/phase1-chat.ts",
     "phase2": "npx tsx src/phase2-file-reader.ts",
     "phase3": "npx tsx src/phase3-chunking.ts",
     "phase4": "npx tsx src/phase4-vectors.ts",
     "phase5": "npx tsx src/phase5-rag.ts",
     "phase6": "npx tsx src/phase6-memory.ts",
+    "phase7": "npx tsx src/phase7-agents.ts",
+    "phase8": "npx tsx src/phase8-multi-agent.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

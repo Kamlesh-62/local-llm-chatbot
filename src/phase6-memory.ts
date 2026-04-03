@@ -84,7 +84,25 @@ async function modeRAGChatWithMemory(prompt: (q: string) => Promise<string>) {
   if (!store) return;
 
   const meta = store.getMetadata();
-  const budget = calculateContextBudget(store, DEFAULT_CONFIG.chatModel);
+
+  // Model picker
+  const CHAT_MODELS = [
+    { id: "nvidia/nemotron-3-super-120b-a12b:free", label: "nemotron-120b (free)" },
+    { id: "openai/gpt-4o-mini", label: "gpt-4o-mini" },
+  ];
+  console.log("\nChat models:");
+  CHAT_MODELS.forEach((m, i) => console.log(`  ${i + 1}. ${m.label}${i === 0 ? " (default)" : ""}`));
+  console.log(`  ${CHAT_MODELS.length + 1}. Custom model ID`);
+  const modelChoice = await prompt(`Pick a model (1-${CHAT_MODELS.length + 1}, default 1): `);
+  const modelNum = parseInt(modelChoice) || 1;
+  let chatModel = DEFAULT_CONFIG.chatModel;
+  if (modelNum >= 1 && modelNum <= CHAT_MODELS.length) {
+    chatModel = CHAT_MODELS[modelNum - 1]!.id;
+  } else if (modelNum === CHAT_MODELS.length + 1) {
+    chatModel = (await prompt("Enter model ID: ")).trim() || DEFAULT_CONFIG.chatModel;
+  }
+
+  const budget = calculateContextBudget(store, chatModel);
   console.log(`  ${meta.count} chunks from: ${meta.sources.join(", ")}`);
   console.log(`  Context budget: ${budget.availableForChunks.toLocaleString()} tokens → topK auto-set to ${budget.recommendedTopK}\n`);
 
@@ -93,6 +111,7 @@ async function modeRAGChatWithMemory(prompt: (q: string) => Promise<string>) {
 
   const config: RAGConfig = {
     ...DEFAULT_CONFIG,
+    chatModel,
     topK: budget.recommendedTopK, // auto-calculated from context window
     enableQueryExpansion: false,
     enableReranking: false,
