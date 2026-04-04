@@ -25,6 +25,7 @@
 import "dotenv/config";
 import * as fs from "fs";
 import * as path from "path";
+import * as cheerio from "cheerio";
 import {
   ragQuery,
   readDocument,
@@ -807,6 +808,146 @@ export function createCalculatorTool(): Tool {
         return `${expr} = ${result}`;
       } catch (err: any) {
         return `Error evaluating expression: ${err.message}`;
+      }
+    },
+  };
+}
+
+// --- fetchWebPage ---
+// Fetches a URL and converts HTML to readable text.
+// Uses cheerio to strip tags, scripts, styles.
+
+export function createFetchWebPageTool(): Tool {
+  return {
+    name: "fetchWebPage",
+    description:
+      "Fetch a web page by URL and extract its text content. Useful for reading articles, documentation, or any public web page.",
+    parameters: [
+      {
+        name: "url",
+        type: "string",
+        description: "The full URL to fetch (e.g. https://example.com/page)",
+        required: true,
+      },
+    ],
+    execute: async (params) => {
+      const url = String(params.url ?? "").trim();
+      if (!url) return "Error: url parameter is required";
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        return "Error: URL must start with http:// or https://";
+      }
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (compatible; RAGBot/1.0; +https://github.com)",
+          },
+          signal: AbortSignal.timeout(15000),
+        });
+
+        if (!response.ok) {
+          return `Error: HTTP ${response.status} ${response.statusText}`;
+        }
+
+        const html = await response.text();
+        const $ = cheerio.load(html);
+
+        // Remove non-content elements
+        $("script, style, nav, footer, header, iframe, noscript").remove();
+
+        // Extract title
+        const title = $("title").text().trim();
+
+        // Extract main text content
+        const text = $("body")
+          .text()
+          .replace(/\s+/g, " ")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+
+        if (!text) return `Fetched ${url} but no text content found.`;
+
+        const result = title ? `Title: ${title}\n\n${text}` : text;
+
+        // Truncate to avoid blowing up context
+        if (result.length > 4000) {
+          return result.slice(0, 4000) + `\n...[truncated, ${result.length} total chars]`;
+        }
+        return result;
+      } catch (err: any) {
+        return `Error fetching ${url}: ${err.message}`;
+      }
+    },
+  };
+}
+
+// --- webSearch ---
+// Searches the web using DuckDuckGo (no API key required).
+// Returns top results with titles, URLs, and snippets.
+
+export function createWebSearchTool(): Tool {
+  return {
+    name: "webSearch",
+    description:
+      "Search the internet using DuckDuckGo. Returns top results with titles, URLs, and snippets. No API key needed.",
+    parameters: [
+      {
+        name: "query",
+        type: "string",
+        description: "The search query",
+        required: true,
+      },
+    ],
+    execute: async (params) => {
+      const query = String(params.query ?? "").trim();
+      if (!query) return "Error: query parameter is required";
+
+      try {
+        const encodedQuery = encodeURIComponent(query);
+        const response = await fetch(
+          `https://html.duckduckgo.com/html/?q=${encodedQuery}`,
+          {
+            method: "POST",
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (compatible; RAGBot/1.0; +https://github.com)",
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `q=${encodedQuery}`,
+            signal: AbortSignal.timeout(15000),
+          }
+        );
+
+        if (!response.ok) {
+          return `Error: Search returned HTTP ${response.status}`;
+        }
+
+        const html = await response.text();
+        const $ = cheerio.load(html);
+
+        const results: string[] = [];
+        $(".result").each((_i, el) => {
+          if (results.length >= 5) return false; // top 5
+
+          const title = $(el).find(".result__title").text().trim();
+          const snippet = $(el).find(".result__snippet").text().trim();
+          const link = $(el).find(".result__url").text().trim();
+
+          if (title && snippet) {
+            results.push(
+              `[${results.length + 1}] ${title}\n    URL: ${link}\n    ${snippet}`
+            );
+          }
+        });
+
+        if (results.length === 0) {
+          return `No results found for: "${query}"`;
+        }
+
+        return `Search results for "${query}":\n\n${results.join("\n\n")}`;
+      } catch (err: any) {
+        return `Error searching: ${err.message}`;
       }
     },
   };

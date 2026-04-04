@@ -29,6 +29,8 @@ import {
   createReadFileTool,
   createListFilesTool,
   createCalculatorTool,
+  createFetchWebPageTool,
+  createWebSearchTool,
   DEFAULT_AGENT_CONFIG,
   type Tool,
   type AgentStep,
@@ -170,6 +172,8 @@ function createTools(store: VectorStore, config: RAGConfig): Tool[] {
     createReadFileTool(SAMPLE_DOCS_DIR),
     createListFilesTool(SAMPLE_DOCS_DIR),
     createCalculatorTool(),
+    createWebSearchTool(),
+    createFetchWebPageTool(),
   ];
 }
 

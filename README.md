@@ -273,6 +273,8 @@ You: Compare it to the smallest one   ← "it" = Jupiter, "smallest" = Mercury
   - `readFile` — read raw file contents
   - `listFiles` — browse available files
   - `calculator` — evaluate math expressions
+  - `webSearch` — search the internet via DuckDuckGo (no API key needed)
+  - `fetchWebPage` — fetch any URL and extract text content
 - **3 agent modes**:
   - **Fast**: Single RAG lookup → direct answer (fastest)
   - **Think**: RAG + step-by-step reasoning (balanced)
@@ -284,10 +286,13 @@ You: Compare it to the smallest one   ← "it" = Jupiter, "smallest" = Mercury
 2. Mode 2: Single Tool Test — test each tool directly without the LLM
 3. Mode 3: Agent Trace — see the full reasoning trace for one question
 
-**Example multi-step question**:
+**Example multi-step questions**:
 ```
 "List the available files, then tell me which invention had the biggest impact"
 → Agent calls listFiles → then searchDocuments → then reasons → Final Answer
+
+"Search the web for the latest Nobel Prize winner and summarize what you find"
+→ Agent calls webSearch → then fetchWebPage → then reasons → Final Answer
 ```
 
 **Key takeaway**: Agents turn LLMs from question-answerers into problem-solvers. The ReAct loop is the foundation of modern AI agents (like Claude, ChatGPT plugins, etc.).

@@ -118,9 +118,9 @@ export interface MultiAgentConfig {
 export const RESEARCH_AGENT: SpecialistAgent = {
   name: "research",
   description:
-    "Deep document search. Use for factual questions needing specific info from the loaded documents.",
+    "Deep document search and web research. Use for factual questions needing specific info from loaded documents or the internet.",
   mode: "react",
-  toolNames: ["searchDocuments", "readFile", "listFiles"],
+  toolNames: ["searchDocuments", "readFile", "listFiles", "webSearch", "fetchWebPage"],
   systemPromptPrefix:
     "You are a Research Specialist. Your job is to find specific facts, details, " +
     "and information from the loaded documents. Search thoroughly — try multiple " +

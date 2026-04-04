@@ -25,6 +25,8 @@ import {
   createReadFileTool,
   createListFilesTool,
   createCalculatorTool,
+  createFetchWebPageTool,
+  createWebSearchTool,
   type Tool,
 } from "./agent.js";
 import {
@@ -127,6 +129,8 @@ function createTools(store: VectorStore, config: RAGConfig): Tool[] {
     createReadFileTool(SAMPLE_DOCS_DIR),
     createListFilesTool(SAMPLE_DOCS_DIR),
     createCalculatorTool(),
+    createWebSearchTool(),
+    createFetchWebPageTool(),
   ];
 }
 
